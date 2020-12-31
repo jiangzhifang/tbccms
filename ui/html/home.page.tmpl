@@ -1,0 +1,27 @@
+{{template "base" .}}
+
+{{define "title"}}首页{{end}}
+
+{{define "body"}}
+  <h2>课程列表</h2>
+  {{if .Coursewares}}
+    <table>
+      <tr>
+      <th>课程名称</th>
+      <th>课程编号</th>
+      <th>是否可买断</th>
+      <th>创建时间</th>
+      </tr>
+        {{range .Coursewares}}
+          <tr>
+            <td><a href='/courseware/{{.CourseCode}}'>{{.CourseTitle}}</a></td>
+            <td>{{.CourseCode}}</td>
+            <td>{{.Active}}</td>
+            <td>{{humanDate .Created}}</td>
+          </tr>
+        {{end}}
+    </table>
+  {{else}}
+   <p>没有课程可供显示！</p>
+  {{end}}
+{{end}}

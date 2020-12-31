@@ -1,0 +1,24 @@
+{{template "base" .}}
+
+{{define "title"}}课件 #{{.Courseware.CourseCode}}{{end}}
+
+{{define "body"}}
+    {{with .Courseware}}
+    <div class='courseware'>
+        <div class='metadata'>
+            课程名称：
+            <strong>{{.CourseTitle}}</strong>
+            <br>
+            课程编号：
+            <strong>{{.CourseCode}}</strong>
+            <br>
+            是否可买断：
+            <strong>{{.Active}}</strong>
+        </div>
+        <div class='metadata'>
+            创建时间：
+            <strong><time>{{humanDate .Created}}</time></strong>
+        </div>
+    </div>
+    {{end}}
+{{end}}
