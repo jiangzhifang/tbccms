@@ -16,6 +16,10 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type contextKey string
+
+var contextKeyIsAuthenticated = contextKey("isAuthenticated")
+
 type application struct {
 	errorLog        *log.Logger
 	infoLog         *log.Logger
@@ -50,6 +54,7 @@ func main() {
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
 	session.Secure = true
+	session.SameSite = http.SameSiteStrictMode
 
 	app := &application{
 		errorLog:        errorLog,

@@ -8,6 +8,7 @@ require (
 	github.com/golangcollege/sessions v1.2.0
 	github.com/jiangzhifang/snippetbox v0.0.0-20201117113745-e518d63ab7a4
 	github.com/justinas/alice v1.2.0
+	github.com/justinas/nosurf v1.1.1
 	github.com/lib/pq v1.9.0
 	github.com/minio/minio-go v6.0.14+incompatible
 	github.com/minio/minio-go/v7 v7.0.6

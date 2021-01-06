@@ -14,13 +14,6 @@ import (
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	/*
-		if r.URL.Path != "/" {
-			app.notFound(w)
-			return
-		}
-	*/
-
 	c, err := app.coursewares.Latest()
 	if err != nil {
 		app.serverError(w, err)
@@ -171,16 +164,11 @@ func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = app.users.Insert(form.Get("name"), form.Get("email"), form.Get("password"))
-	fmt.Println("hello")
-	fmt.Println(err)
-	fmt.Println("world")
-	fmt.Println(models.ErrDuplicateEmail)
 	if err == models.ErrDuplicateEmail {
 		form.Errors.Add("email", "此邮箱已经被注册")
 		app.render(w, r, "signup.page.tmpl", &templateData{Form: form})
 		return
 	} else if err != nil {
-
 		app.serverError(w, err)
 		return
 	}
@@ -188,11 +176,35 @@ func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 func (app *application) loginUserForm(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display the user login form...")
+	app.render(w, r, "login.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Authenticate and login the user...")
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	form := forms.New(r.PostForm)
+	id, err := app.users.Authenticate(form.Get("email"), form.Get("password"))
+	if err == models.ErrInvalidCredentials {
+		form.Errors.Add("generic", "邮箱或密码不正确")
+		app.render(w, r, "login.page.tmpl", &templateData{Form: form})
+		return
+	} else if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	// Add the ID of the current user to the session, so that they are now 'logged
+	// in'.
+	app.session.Put(r, "authenticatedUserID", id)
+	// Redirect the user to the create snippet page.
+	http.Redirect(w, r, "/courseware/create", http.StatusSeeOther)
 }
 func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Logout the user...")
+	app.session.Remove(r, "authenticatedUserID")
+	app.session.Put(r, "flash", "你已经成功退出！")
+	http.Redirect(w, r, "/", 303)
 }

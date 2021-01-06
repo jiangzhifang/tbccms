@@ -15,15 +15,21 @@
   <nav>
     <div>
       <a href="/">首页</a>
+      {{if .IsAuthenticated}}
       <a href='/courseware/create'>创建课件</a>
+      {{end}}
     </div>
 
     <div>
-      <a href='/user/signup'>注册</a>
-      <a href='/user/login'>登录</a>
+      {{if .IsAuthenticated}}
       <form action='/user/logout' method='POST'>
+        <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
         <button>退出</button>
       </form>
+      {{else}}
+      <a href='/user/signup'>注册</a>
+      <a href='/user/login'>登录</a>
+      {{end}}
     </div>
   </nav>
   <section>

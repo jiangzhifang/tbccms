@@ -2,11 +2,9 @@ package pgsql
 
 import (
 	"database/sql"
-	"fmt"
 	"strings"
 
 	"github.com/jiangzhifang/tbccms/pkg/models"
-	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -27,8 +25,6 @@ func (m *UserModel) Insert(name, email, password string) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "pq: duplicate key value violates unique constraint \"users_uc_email\"") {
-			fmt.Println("aaaa")
-			fmt.Println(models.ErrDuplicateEmail)
 			return models.ErrDuplicateEmail
 		}
 
@@ -43,14 +39,14 @@ func (m *UserModel) Authenticate(email, password string) (int, error) {
 	row := m.DB.QueryRow(stmt, email)
 	err := row.Scan(&id, &hashedPassword)
 	if err == sql.ErrNoRows {
-		return 0, models.ErrInvalideCredentials
+		return 0, models.ErrInvalidCredentials
 	} else if err != nil {
 		return 0, err
 	}
 
 	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
 	if err == bcrypt.ErrMismatchedHashAndPassword {
-		return 0, models.ErrInvalideCredentials
+		return 0, models.ErrInvalidCredentials
 	} else if err != nil {
 		return 0, err
 	}

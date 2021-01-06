@@ -3,6 +3,7 @@
 
 {{define "body"}}
     <form action='/courseware/create' enctype="multipart/form-data" method='POST'>
+    <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
     {{with .Form}}
     <div>
         <label>课程名称：</label>
