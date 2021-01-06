@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
+	"unicode/utf8"
 
-	"github.com/jiangzhifang/tbccms/pkg/formfiles"
 	"github.com/jiangzhifang/tbccms/pkg/forms"
 	"github.com/jiangzhifang/tbccms/pkg/models"
 	"github.com/minio/minio-go/v7"
@@ -53,26 +54,11 @@ func (app *application) showCourseware(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) createCoursewareForm(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "create.page.tmpl", &templateData{
-		Form:     forms.New(nil),
-		FormFile: formfiles.New(nil),
+		Form: forms.New(nil),
 	})
 }
 
 func (app *application) createCourseware(w http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(32 << 20)
-
-	form := forms.New(r.PostForm)
-	form.Required("coursetitle", "coursecode")
-	form.MaxLength("coursetitle", 100)
-	form.MaxLength("coursecode", 100)
-
-	formfile := formfiles.New(r.MultipartForm)
-	formfile.Required("uploadcf")
-
-	if !form.Valid() || !formfile.Valid() {
-		app.render(w, r, "create.page.tmpl", &templateData{Form: form, FormFile: formfile})
-		return
-	}
 
 	ctx := context.Background()
 	endpoint := "21tbminio.21tb.com"
@@ -103,7 +89,15 @@ func (app *application) createCourseware(w http.ResponseWriter, r *http.Request)
 		log.Printf("Successfully created %s\n", bucketName)
 	}
 
+	errors := make(map[string]string)
+	r.ParseMultipartForm(32 << 20)
 	files := r.MultipartForm.File["uploadcf"]
+	filesLength := len(files)
+
+	if filesLength == 0 {
+		errors["coursewareFiles"] = "未上传课件压缩包"
+		// return
+	}
 
 	courseCode := r.MultipartForm.Value["coursecode"][0]
 	courseTitle := r.MultipartForm.Value["coursetitle"][0]
@@ -111,6 +105,26 @@ func (app *application) createCourseware(w http.ResponseWriter, r *http.Request)
 
 	if r.MultipartForm.Value["active"][0] == "" {
 		active = false
+	}
+
+	if strings.TrimSpace(courseTitle) == "" {
+		errors["courseTitle"] = "课程名称不能为空"
+	} else if utf8.RuneCountInString(courseTitle) > 100 {
+		errors["courseTitle"] = "课程名称太长(不超过100个字符)"
+	}
+
+	if strings.TrimSpace(courseCode) == "" {
+		errors["courseCode"] = "课程编号不能为空"
+	} else if utf8.RuneCountInString(courseTitle) > 100 {
+		errors["courseCode"] = "课程编号太长(不超过100个字符)"
+	}
+
+	if len(errors) > 0 {
+		app.render(w, r, "create.page.tmpl", &templateData{
+			FormErrors: errors,
+			FormData:   r.PostForm,
+		})
+		return
 	}
 
 	objectName := files[0].Filename
@@ -143,56 +157,6 @@ func (app *application) createCourseware(w http.ResponseWriter, r *http.Request)
 	}
 
 	log.Println(uploadinfo)
-	app.session.Put(r, "flash", "课件创建成功！")
 
 	http.Redirect(w, r, fmt.Sprintf("/courseware/%s", courseCode), http.StatusSeeOther)
-}
-
-func (app *application) signupUserForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "signup.page.tmpl", &templateData{
-		Form: forms.New(nil),
-	})
-}
-func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-	// Validate the form contents using the form helper we made earlier.
-	form := forms.New(r.PostForm)
-	form.Required("name", "email", "password")
-	form.MatchesPattern("email", forms.EmailRX)
-	form.MinLength("password", 10)
-	// If there are any errors, redisplay the signup form.
-	if !form.Valid() {
-		app.render(w, r, "signup.page.tmpl", &templateData{Form: form})
-		return
-	}
-
-	err = app.users.Insert(form.Get("name"), form.Get("email"), form.Get("password"))
-	fmt.Println("hello")
-	fmt.Println(err)
-	fmt.Println("world")
-	fmt.Println(models.ErrDuplicateEmail)
-	if err == models.ErrDuplicateEmail {
-		form.Errors.Add("email", "此邮箱已经被注册")
-		app.render(w, r, "signup.page.tmpl", &templateData{Form: form})
-		return
-	} else if err != nil {
-
-		app.serverError(w, err)
-		return
-	}
-	app.session.Put(r, "flash", "注册成功，请登录。")
-	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
-}
-func (app *application) loginUserForm(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display the user login form...")
-}
-func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Authenticate and login the user...")
-}
-func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Logout the user...")
 }

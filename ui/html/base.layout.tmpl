@@ -13,10 +13,23 @@
     <h1><a href="/">课程管理系统</a></h1>
   </header>
   <nav>
-    <a href="/">首页</a>
-    <a href='/courseware/create'>创建课件</a>
+    <div>
+      <a href="/">首页</a>
+      <a href='/courseware/create'>创建课件</a>
+    </div>
+
+    <div>
+      <a href='/user/signup'>注册</a>
+      <a href='/user/login'>登录</a>
+      <form action='/user/logout' method='POST'>
+        <button>退出</button>
+      </form>
+    </div>
   </nav>
   <section>
+    {{with .Flash}}
+    <div class='flash'>{{.}}</div>
+    {{end}}
     {{template "body" .}}
   </section>
   {{template "footer" .}}

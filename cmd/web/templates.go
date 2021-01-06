@@ -5,13 +5,18 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/jiangzhifang/tbccms/pkg/formfiles"
+	"github.com/jiangzhifang/tbccms/pkg/forms"
 	"github.com/jiangzhifang/tbccms/pkg/models"
 )
 
 type templateData struct {
 	CurrentYear int
+	Flash       string
 	Courseware  *models.Courseware
 	Coursewares []*models.Courseware
+	Form        *forms.Form
+	FormFile    *formfiles.FormFile
 }
 
 func humanDate(t time.Time) string {

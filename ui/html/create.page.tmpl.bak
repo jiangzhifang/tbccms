@@ -3,40 +3,37 @@
 
 {{define "body"}}
     <form action='/courseware/create' enctype="multipart/form-data" method='POST'>
-    {{with .Form}}
     <div>
         <label>课程名称：</label>
-        {{with .Errors.Get "coursetitle"}}
+        {{with .FormErrors.courseTitle}}
             <label class='error'>{{.}}</label>
         {{end}}
-        <input type='text' name='coursetitle' value='{{.Get "coursetitle"}}'>
+        <input type='text' name='coursetitle'>
     </div>
     <div>
         <label>课程编号：</label>
-        {{with .Errors.Get "coursecode"}}
+        {{with .FormErrors.courseCode}}
             <label class='error'>{{.}}</label>
         {{end}}
-        <input type='text' name='coursecode' value='{{.Get "coursecode"}}'>
+        <input type='text' name='coursecode'>
     </div>
     <div>
         <label>是否可买断</label>
         <input type='checkbox' name='active' checked>
-    </div>
-    {{end}}
-
-    {{with .FormFile}}
+    <div>
     <div>
         <label>上传课件压缩包</label>
         <br>
-        {{with .Errors.Get "uploadcf"}}
+        {{with .FormErrors.coursewareFiles}}
             <label class='error'>{{.}}</label>
         {{end}}
+        <!-- 不允许上传多个文件
+            <input type="file" name="uploadcf" multiple="multiple">
+        -->
         <input type="file" name="uploadcf">
     </div>
-   
     <div>
         <input type='submit' value='确定'>
     </div>
-    {{end}}
     </form>
 {{end}}

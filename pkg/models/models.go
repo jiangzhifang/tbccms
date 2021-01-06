@@ -5,19 +5,13 @@ import (
 	"time"
 )
 
-//ErrNoRecord 创建日志
-var ErrNoRecord = errors.New("models: no matching record found")
+var (
+	ErrNoRecord = errors.New("models: no matching record found")
 
-/*
-//Snippet 定义snippet
-type Snippet struct {
-	ID      int
-	Title   string
-	Content string
-	Created time.Time
-	Expires time.Time
-}
-*/
+	ErrInvalidCredentials = errors.New("models: invalid credentials")
+
+	ErrDuplicateEmail = errors.New("models: duplicate email")
+)
 
 type Courseware struct {
 	CourseCode  string
@@ -29,4 +23,13 @@ type Courseware struct {
 type CoursewareFile struct {
 	CourseCode         string
 	CoursewareFileName string
+}
+
+type User struct {
+	ID             int
+	Name           string
+	Email          string
+	HashedPassword []byte
+	Created        time.Time
+	Active         bool
 }
